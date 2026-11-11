@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 6mm 7mm;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'Liberation Sans', Arial, Helvetica, sans-serif;
+    font-size: 7.2pt;
+    line-height: 1.18;
+    color: #000;
+  }
+  .top-bar {
+    width: 100%;
+    font-size: 9.5pt;
+    font-weight: bold;
+    padding: 0 2px 3px 2px;
+  }
+  .top-bar td {
+    border: none;
+    padding: 0;
+  }
+  table.awb {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1.4px solid #000;
+  }
+  table.awb td {
+    border: 0.75px solid #000;
+    vertical-align: top;
+    padding: 2px 3.5px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+  .lbl {
+    font-size: 5.6pt;
+    font-weight: bold;
+    color: #111;
+    display: block;
+    margin-bottom: 1px;
+  }
+  .shaded {
+    background-color: #e6e8eb;
+  }
+  .val {
+    font-size: 7pt;
+    font-weight: bold;
+    white-space: pre-wrap;
+  }
+  .val-norm {
+    font-size: 6.7pt;
+    white-space: pre-wrap;
+  }
+  .center { text-align: center; }
+  .right { text-align: right; }
+  .legal-sm {
+    font-size: 5.3pt;
+    line-height: 1.12;
+    text-align: justify;
+  }
+  .cargo-desc {
+    font-size: 6.35pt;
+    line-height: 1.15;
+    white-space: pre-wrap;
+  }
+  .agent-dhaka {
+    font-size: 6.5pt;
+    font-weight: bold;
+    margin-top: 6px;
+    padding-top: 3px;
+    border-top: 0.5px dashed #666;
+    white-space: pre-wrap;
+  }
+  .charges-lbl {
+    background-color: #e6e8eb;
+    font-size: 5.8pt;
+    font-weight: bold;
+    text-align: center;
+    padding: 1.5px 2px;
+  }
+</style>
+</head>
+<body>
+
+<table class="top-bar">
+  <tr>
+    <td>{{ awb_header }}</td>
+    <td class="right">{{ hawb_no }}</td>
+  </tr>
+</table>
+
+<table class="awb">
+  <colgroup>
+    <col style="width: 7%;">
+    <col style="width: 9%;">
+    <col style="width: 4%;">
+    <col style="width: 5%;">
+    <col style="width: 9%;">
+    <col style="width: 9%;">
+    <col style="width: 11%;">
+    <col style="width: 46%;">
+  </colgroup>
+
+  <tr>
+    <td colspan="5" style="height: 58px;">
+      <span class="lbl">Shipper's Name and Address</span>
+      <div class="val">{{ shipper }}</div>
+    </td>
+    <td colspan="3" style="height: 58px;">
+      <span class="lbl">Not Negotiable &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Air Waybill &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Issued by</span>
+      <div class="val" style="margin-top: 2px;">{{ issued_by }}</div>
+      <div style="font-size: 5.5pt; margin-top: 3px; border-top: 0.6px solid #000; padding-top: 2px;">
+        Copies 1, 2 and 3 of this Air Waybill are originals and have the same validity.
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="5" style="height: 62px;">
+      <span class="lbl">Consignee's Name and Address</span>
+      <div class="val">{{ consignee }}</div>
+    </td>
+    <td colspan="3" class="legal-sm" style="height: 62px;">
+      It is agreed that the goods described herein are accepted in apparent good order and condition (except as noted) for carriage SUBJECT TO THE CONDITIONS OF CONTRACT ON THE REVERSE HEREOF. ALL GOODS MAY BE CARRIED BY ANY OTHER MEANS INCLUDING ROAD OR ANY OTHER CARRIER UNLESS SPECIFIC CONTRARY INSTRUCTIONS ARE GIVEN HEREON BY THE SHIPPER, AND SHIPPER AGREES THAT THE SHIPMENT MAY BE CARRIED VIA INTERMEDIATE STOPPING PLACES WHICH THE CARRIER DEEMS APPROPRIATE. THE SHIPPER'S ATTENTION IS DRAWN TO THE NOTICE CONCERNING CARRIER'S LIMITATION OF LIABILITY. Shipper may increase such limitation of liability by declaring a higher value for carriage and paying a supplemental charge if required.
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="5" style="height: 52px;">
+      <span class="lbl">Issuing Carrier's Agent Name and City</span>
+      <div class="val">{{ issuing_agent }}</div>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border-top: 0.6px solid #000;">
+        <tr>
+          <td style="width: 55%; border: none; border-right: 0.6px solid #000; padding: 2px 0 0 0; font-size: 6pt;">Agent's IATA Code</td>
+          <td style="width: 45%; border: none; padding: 2px 0 0 3px; font-size: 6pt;">Account No.</td>
+        </tr>
+      </table>
+    </td>
+    <td colspan="3" rowspan="2" style="height: 82px;">
+      <span class="lbl">Accounting Information</span>
+      <div class="val-norm">{{ notify_party }}</div>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="5" style="height: 28px;">
+      <span class="lbl">Airport of Departure (Addr. of First Carrier) and Requested Routing</span>
+      <div class="val">{{ airport_departure }}</div>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="height: 28px;">
+      <span class="lbl">To</span>
+      <div class="val center">{{ to_dest }}</div>
+    </td>
+    <td colspan="2">
+      <span class="lbl">By First Carrier</span>
+      <div class="val center">{{ first_carrier }}</div>
+    </td>
+    <td>
+      <span class="lbl">to</span>
+    </td>
+    <td>
+      <span class="lbl">by</span>
+    </td>
+    <td colspan="3" style="padding: 0;">
+      <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+        <tr>
+          <td style="width: 11%; border: none; border-right: 0.6px solid #000; padding: 1px 2px;">
+            <span class="lbl">Currency</span>
+            <div class="val center">{{ currency }}</div>
+          </td>
+          <td style="width: 9%; border: none; border-right: 0.6px solid #000; padding: 1px 2px;">
+            <span class="lbl">CHGS</span>
+          </td>
+          <td style="width: 16%; border: none; border-right: 0.6px solid #000; padding: 1px 2px;">
+            <span class="lbl center">WT/VAL</span>
+            <div class="val center">{{ wt_val }}</div>
+          </td>
+          <td style="width: 16%; border: none; border-right: 0.6px solid #000; padding: 1px 2px;">
+            <span class="lbl center">Other</span>
+            <div class="val center">{{ other_chgs }}</div>
+          </td>
+          <td style="width: 24%; border: none; border-right: 0.6px solid #000; padding: 1px 2px;">
+            <span class="lbl">Declared Value for Carriage</span>
+            <div class="val center">{{ declared_carriage }}</div>
+          </td>
+          <td style="width: 24%; border: none; padding: 1px 2px;">
+            <span class="lbl">Declared Value for Customs</span>
+            <div class="val center">{{ declared_customs }}</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="3" style="height: 28px;">
+      <span class="lbl">Airport of Destination</span>
+      <div class="val">{{ airport_destination }}</div>
+    </td>
+    <td colspan="2">
+      <span class="lbl">Flight/Date</span>
+      <div class="val center">{{ flight_no }} / {{ flight_date }}</div>
+    </td>
+    <td colspan="3" style="padding: 0;">
+      <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+        <tr>
+          <td style="width: 25%; border: none; border-right: 0.6px solid #000; padding: 2px;">
+            <span class="lbl">Amount of Insurance</span>
+            <div class="val center">{{ insurance }}</div>
+          </td>
+          <td style="width: 75%; border: none; padding: 2px;" class="legal-sm">
+            INSURANCE — If Carrier offers insurance, and such insurance is requested in accordance with the conditions thereof, indicate amount to be insured in figures in box marked "Amount of Insurance".
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="8" style="height: 24px;">
+      <span class="lbl">Handling Information</span>
+      <div class="val-norm"></div>
+    </td>
+  </tr>
+
+  <tr class="shaded center">
+    <td><span class="lbl">No. of Pieces RCP</span></td>
+    <td><span class="lbl">Gross Weight</span></td>
+    <td><span class="lbl">kg/lb</span></td>
+    <td><span class="lbl">Rate Class</span></td>
+    <td><span class="lbl">Commodity Item No.</span></td>
+    <td><span class="lbl">Chargeable Weight</span></td>
+    <td><span class="lbl">Rate / Charge &amp; Total</span></td>
+    <td><span class="lbl">Nature and Quantity of Goods (incl. Dimensions or Volume)</span></td>
+  </tr>
+
+  <tr>
+    <td class="center" style="height: 265px;">
+      <div class="val" style="margin-top: 4px;">{{ pieces }}</div>
+      <div class="val-norm" style="margin-top: 25px;">{{ total_cartons_text }}</div>
+    </td>
+    <td class="center">
+      <div class="val" style="margin-top: 4px;">{{ gross_weight }}</div>
+    </td>
+    <td class="center">
+      <div class="val" style="margin-top: 4px;">{{ weight_unit }}</div>
+    </td>
+    <td class="center"></td>
+    <td class="center"></td>
+    <td class="center">
+      <div class="val" style="margin-top: 4px;">{{ chargeable_weight }}</div>
+    </td>
+    <td class="center">
+      <div class="val" style="margin-top: 4px;">{{ rate_charge }}</div>
+    </td>
+    <td>
+      <div class="cargo-desc"><strong>SHIPPING MARKS:</strong>
+{{ shipping_marks }}
+
+{{ goods_description }}</div>
+      {% if dhaka_agent %}
+      <div class="agent-dhaka">{{ dhaka_agent }}</div>
+      {% endif %}
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="8" style="padding: 0;">
+      <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+        <tr>
+          <td style="width: 42%; border: none; border-right: 0.75px solid #000; padding: 0;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr>
+                <td class="charges-lbl" style="width: 34%; border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">Prepaid</td>
+                <td class="charges-lbl" style="width: 32%; border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">Weight Charge</td>
+                <td class="charges-lbl" style="width: 34%; border-bottom: 0.6px solid #000;">Collect</td>
+              </tr>
+              <tr>
+                <td class="center val" style="height: 18px; border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">{{ pp_weight }}</td>
+                <td class="charges-lbl" style="border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">Valuation Charge</td>
+                <td class="center val" style="border-bottom: 0.6px solid #000;">{{ cc_weight }}</td>
+              </tr>
+              <tr>
+                <td class="center val" style="height: 18px; border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;"></td>
+                <td class="charges-lbl" style="border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">Tax</td>
+                <td class="center val" style="border-bottom: 0.6px solid #000;"></td>
+              </tr>
+              <tr>
+                <td class="center val" style="height: 18px; border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;"></td>
+                <td class="charges-lbl" style="border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">Total Other Charges Due Agent</td>
+                <td class="center val" style="border-bottom: 0.6px solid #000;"></td>
+              </tr>
+              <tr>
+                <td class="center val" style="height: 18px; border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;"></td>
+                <td class="charges-lbl" style="border-bottom: 0.6px solid #000; border-right: 0.6px solid #000;">Total Other Charges Due Carrier</td>
+                <td class="center val" style="border-bottom: 0.6px solid #000;"></td>
+              </tr>
+              <tr>
+                <td class="shaded center val" style="height: 22px; border-right: 0.6px solid #000;">{{ pp_total }}</td>
+                <td class="charges-lbl" style="border-right: 0.6px solid #000;">Total Prepaid / Total Collect</td>
+                <td class="shaded center val">{{ cc_total }}</td>
+              </tr>
+            </table>
+          </td>
+
+          <td style="width: 58%; border: none; padding: 0;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr>
+                <td colspan="3" style="height: 26px; border-bottom: 0.6px solid #000; padding: 2px 4px;">
+                  <span class="lbl">Other Charges</span>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3" style="height: 44px; border-bottom: 0.6px solid #000; padding: 2px 4px;">
+                  <div class="legal-sm">
+                    Shipper certifies that the particulars on the face hereof are correct and that insofar as any part of the consignment contains dangerous goods, such part is properly described by name and is in proper condition for carriage by air according to the applicable Dangerous Goods Regulations.
+                  </div>
+                  <div class="val center" style="margin-top: 6px;">{{ shipper_signature }}</div>
+                  <div class="lbl center" style="border-top: 0.5px dashed #555; margin-top: 2px;">Signature of Shipper or his Agent</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="width: 30%; height: 38px; border-right: 0.6px solid #000; padding: 2px 4px;">
+                  <span class="lbl">Executed on (date)</span>
+                  <div class="val center" style="margin-top: 6px;">{{ exec_date }}</div>
+                </td>
+                <td style="width: 32%; border-right: 0.6px solid #000; padding: 2px 4px;">
+                  <span class="lbl">at (place)</span>
+                  <div class="val center" style="margin-top: 6px;">{{ exec_place }}</div>
+                </td>
+                <td style="width: 38%; padding: 2px 4px;">
+                  <span class="lbl">Signature of Issuing Carrier or its Agent</span>
+                  <div class="val center" style="margin-top: 6px;">{{ carrier_signature }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table class="top-bar" style="padding-top: 3px;">
+  <tr>
+    <td style="font-size: 6.5pt; font-weight: normal;">ORIGINAL 3 (FOR SHIPPER)</td>
+    <td class="right">{{ hawb_no }}</td>
+  </tr>
+</table>
+
+</body>
+</html>
