@@ -1,4 +1,5 @@
 import io
+import re
 import zipfile
 from datetime import datetime, timedelta
 import pandas as pd
@@ -9,9 +10,17 @@ from weasyprint import HTML
 st.set_page_config(page_title="IATA Air Waybill Generator", page_icon="✈️", layout="wide")
 
 def excel_serial_to_date(val):
+    """Convert Excel serial float/int OR YYYY-MM-DD timestamp string to DD-MMM-YYYY."""
     if pd.isna(val):
         return ""
     s = str(val).strip()
+    if not s:
+        return ""
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%b-%Y"):
+        try:
+            return datetime.strptime(s, fmt).strftime("%d-%b-%Y").upper()
+        except ValueError:
+            pass
     try:
         num = float(s)
         if 30000 < num < 70000:
@@ -22,6 +31,7 @@ def excel_serial_to_date(val):
     return s
 
 def clean_cell(df, r, c):
+    """Safely extract and strip a cell value from the DataFrame."""
     try:
         val = df.iat[r, c]
         if pd.isna(val):
@@ -33,7 +43,15 @@ def clean_cell(df, r, c):
     except IndexError:
         return ""
 
+def clean_multiline_spaces(text):
+    """Collapse excessive horizontal padding spaces while preserving clean line breaks."""
+    if not text:
+        return ""
+    lines = [re.sub(r"\s{2,}", " ", line).strip() for line in text.splitlines()]
+    return "\n".join(line for line in lines if line)
+
 def find_row_containing(df, keyword, default_row):
+    """Find the first row index containing a specific keyword."""
     for r in range(len(df)):
         for c in range(len(df.columns)):
             val = str(df.iat[r, c])
@@ -42,23 +60,27 @@ def find_row_containing(df, keyword, default_row):
     return default_row
 
 def parse_awb_excel(file_bytes, filename):
+    """Extract all Air Waybill fields from your standard Excel/CSV template."""
     if filename.lower().endswith(".csv"):
         df = pd.read_csv(io.BytesIO(file_bytes), header=None)
     else:
         df = pd.read_excel(io.BytesIO(file_bytes), header=None)
 
+    # Row 0: MAWB & HAWB
     prefix = clean_cell(df, 0, 0)
     origin_code = clean_cell(df, 0, 3)
     mawb_serial = clean_cell(df, 0, 7)
-    hawb_no = clean_cell(df, 0, 60) or filename.rsplit(".", 1)[0]
+    hawb_no = clean_cell(df, 0, 60) or filename.rsplit(".", 1)
     awb_header = f"{prefix} - {origin_code} - {mawb_serial}".strip(" -")
 
+    # Parties & Agents
     issued_by = clean_cell(df, 1, 46)
     shipper = clean_cell(df, 2, 0)
     consignee = clean_cell(df, 9, 0)
     issuing_agent = clean_cell(df, 14, 0)
-    notify_party = clean_cell(df, 14, 38)
+    notify_party = clean_multiline_spaces(clean_cell(df, 14, 38))
 
+    # Routing & Valuation
     airport_departure = clean_cell(df, 19, 0)
     to_dest = clean_cell(df, 21, 0)
     first_carrier = clean_cell(df, 21, 4)
@@ -71,9 +93,14 @@ def parse_awb_excel(file_bytes, filename):
 
     airport_destination = clean_cell(df, 24, 0)
     flight_no = clean_cell(df, 24, 17)
-    flight_date = excel_serial_to_date(clean_cell(df, 24, 29))
+    raw_flight_date = (
+        excel_serial_to_date(clean_cell(df, 24, 29))
+        or excel_serial_to_date(clean_cell(df, 24, 28))
+        or excel_serial_to_date(clean_cell(df, 24, 30))
+    )
     insurance = clean_cell(df, 24, 38) or "NIL"
 
+    # Cartons, Weights & Rates
     total_cartons_text = clean_cell(df, 27, 0)
     pieces = clean_cell(df, 33, 0)
     gross_weight = clean_cell(df, 33, 4)
@@ -81,18 +108,21 @@ def parse_awb_excel(file_bytes, filename):
     chargeable_weight = clean_cell(df, 33, 21)
     rate_charge = clean_cell(df, 33, 40) or "AS ARRANGED"
 
+    # Shipping Marks & Description
     marks_raw = clean_cell(df, 36, 0)
     shipping_marks = marks_raw.replace("SHIPPING MARKS:", "").strip()
-    goods_description = clean_cell(df, 36, 17)
+    goods_description = clean_multiline_spaces(clean_cell(df, 36, 17))
 
+    # Dynamic lookup for Dhaka Agent & Execution Signatures
     agent_row = find_row_containing(df, "AGENT IN DHAKA", 54)
-    dhaka_agent = clean_cell(df, agent_row, 32)
+    dhaka_agent = clean_multiline_spaces(clean_cell(df, agent_row, 32))
 
     ship_sig_row = find_row_containing(df, "AS AGENT FOR CARRIER", 70)
     shipper_signature = clean_cell(df, ship_sig_row, 28)
 
     exec_row = ship_sig_row + 5
-    exec_date = excel_serial_to_date(clean_cell(df, exec_row, 27)) or flight_date
+    exec_date = excel_serial_to_date(clean_cell(df, exec_row, 27)) or raw_flight_date
+    flight_date = raw_flight_date or exec_date
     exec_place = clean_cell(df, exec_row, 46) or "HONG KONG"
     carrier_signature = clean_cell(df, exec_row, 55)
 
@@ -136,6 +166,7 @@ def parse_awb_excel(file_bytes, filename):
         "carrier_signature": carrier_signature,
     }
 
+# --- Web App User Interface ---
 st.title("✈️ IATA Air Waybill (Excel → PDF) Converter")
 st.markdown("Upload one or multiple shipment spreadsheets (`.xlsx`, `.xls`, or `.csv`) to generate single-page IATA Air Waybill PDFs.")
 
@@ -180,9 +211,9 @@ if uploaded_files:
 
         st.subheader("Generated Air Waybills")
         for pdf_name, pdf_bytes, info in generated_pdfs:
-            col1, col2, col3, col4 = st.columns([1.5, 3, 1.5, 1.5])
+            col1, col2, col3, col4 = st.columns()
             col1.write(f"**{info['hawb_no']}**")
-            col2.write(info['shipper'].splitlines()[0] if info['shipper'] else "")
+            col2.write(info['shipper'].splitlines() if info['shipper'] else "")
             col3.write(f"{info['pieces']} CTNS | {info['gross_weight']} {info['weight_unit']}")
             col4.download_button(
                 label="⬇️ Download PDF",
