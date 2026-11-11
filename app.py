@@ -70,7 +70,7 @@ def parse_awb_excel(file_bytes, filename):
     prefix = clean_cell(df, 0, 0)
     origin_code = clean_cell(df, 0, 3)
     mawb_serial = clean_cell(df, 0, 7)
-    hawb_no = clean_cell(df, 0, 60) or filename.rsplit(".", 1)
+    hawb_no = clean_cell(df, 0, 60) or filename.rsplit(".", 1)[0]
     awb_header = f"{prefix} - {origin_code} - {mawb_serial}".strip(" -")
 
     # Parties & Agents
@@ -211,9 +211,9 @@ if uploaded_files:
 
         st.subheader("Generated Air Waybills")
         for pdf_name, pdf_bytes, info in generated_pdfs:
-            col1, col2, col3, col4 = st.columns()
+            col1, col2, col3, col4 = st.columns(4)
             col1.write(f"**{info['hawb_no']}**")
-            col2.write(info['shipper'].splitlines() if info['shipper'] else "")
+            col2.write(info['shipper'].splitlines()[0] if info['shipper'] else "")
             col3.write(f"{info['pieces']} CTNS | {info['gross_weight']} {info['weight_unit']}")
             col4.download_button(
                 label="⬇️ Download PDF",
